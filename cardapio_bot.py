@@ -3,14 +3,15 @@ import pandas as pd            # Armazenamento do Web Scrapping em tabelas
 import requests                # Execução de requisições HTTP
 from bs4 import BeautifulSoup  # Extração de dados em HTML
 
-"""
-TWITTER
-"""
-# Conta @bot_ru_ufrgs
-CONSUMER_KEY = ""
-CONSUMER_SECRET = ""
-ACCESS_TOKEN = ""
-ACCESS_TOKEN_SECRET = ""
+# Dotenv/Environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Variables configurations
+CONSUMER_KEY = os.getenv('CONSUMER_KEY')
+CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+ACCESS_TOKEN_SECRET = os.getenv('ACCESS_TOKEN_SECRET')
 
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -24,6 +25,7 @@ try:
     print("Twitter Authentication OK")
 except:
     print("Error during authentication")
+    exit(-1)
     
 
 """
