@@ -7,10 +7,10 @@ from bs4 import BeautifulSoup  # Extração de dados em HTML
 TWITTER
 """
 # Conta @bot_ru_ufrgs
-CONSUMER_KEY = "P9HKyZ7udKYsMhLYKCJi9GmIW"
-CONSUMER_SECRET = "OKKi2rHJnOZms0sYh7JcLiTD0P0PYnYSAAZ9H9i5ICDXQX2cxc"
-ACCESS_TOKEN = "1181439766983827456-qrGkyzzUcyMHiUT205iQRbENKAmbVG"
-ACCESS_TOKEN_SECRET = "hfB6WgCntty5ogc8EotlFLzYHg545e7ymihkMLe812whJ"
+CONSUMER_KEY = ""
+CONSUMER_SECRET = ""
+ACCESS_TOKEN = ""
+ACCESS_TOKEN_SECRET = ""
 
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
