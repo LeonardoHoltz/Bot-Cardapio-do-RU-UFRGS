@@ -1,39 +1,43 @@
-import os                      # To fetch envinronment variables
-import tweepy                  # Comunicacao com API do twitter
-import pandas as pd            # Armazenamento do Web Scrapping em tabelas
-import requests                # Execução de requisições HTTP
-from bs4 import BeautifulSoup  # Extração de dados em HTML
+import os                           # PAra buscar as variáveis de ambiente
+from os.path import join, dirname
+import tweepy                       # Comunicacao com API do twitter
+import pandas as pd                 # Armazenamento do Web Scrapping em tabelas
+import requests                     # Execução de requisições HTTP
+from bs4 import BeautifulSoup       # Extração de dados em HTML
+from datetime import datetime       # PAra conseguir a data atual
 
-# Dotenv/Environment variables
+
+# variaveis de ambiente Dotenv/Environment
 from dotenv import load_dotenv
-load_dotenv()
+dotenv_path = join(dirname(__file__), 'sample.env')
+load_dotenv(dotenv_path)
 
-# Variables configurations
-CONSUMER_KEY = os.getenv('CONSUMER_KEY')
+# configurações dos tokens da API a partir de um arquivo env
+CONSUMER_KEY = os.getenv("CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 ACCESS_TOKEN_SECRET = os.getenv('ACCESS_TOKEN_SECRET')
 
-# Constants
-RU_COUNT = 6
+# Constantes
+RU_COUNT = 7
 
-# Authenticate to Twitter
+# Autenticação da conta do twitter
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
-# Create API object
+# Criação do objeto API
 api = tweepy.API(auth)
 
-# Credentials verification
+# Verificação de credenciais com o api
 try:
     api.verify_credentials()
-    print("Twitter Authentication OK")
+    print("Autenticação do Twitter OK")
 except:
-    print("Error during authentication")
+    print("Erro durante a autenticacao")
     exit(-1)
 
 
-# Substrings that will be replaced in the content string
+# Substrings que serão substituídas pela string conteúdo
 REPLACE_STRINGS = [
     ('<div class="area">', ''),
     ('   ', ''),
@@ -46,10 +50,13 @@ REPLACE_STRINGS = [
     ('  ', ' ')
 ]
 
-# Access to the site
+# Acesso a data atual:
+now = datetime.now()
+
+# Acesso ao site da UFRGS
 req = requests.get('http://www.ufrgs.br/ufrgs/ru')
 if req.status_code == 200:
-    print('Requisição bem sucedida!')
+    print('Requisicao bem sucedida!')
     content = req.content
     soup = BeautifulSoup(content, 'html.parser')
     table = soup.find_all(name='div', attrs={'class': 'area'})
@@ -59,11 +66,11 @@ if req.status_code == 200:
     for content, replace_str in REPLACE_STRINGS:
         table_str = table_str.replace(content, replace_str)
 
-    # Trims a space before the string
+    # Remoção de um espaço no começo da string:
     table_str = table_str[1:]
 
-    # Creates a list of all the RU menus,
-    # separating every substring (one RU menu) in an element of a list
+    # Criação da lista de todos os cardápios dos RUs,
+    # separando cada substring (um cardápio) em um elemento da lista
     menu_list = []
     for i in range(RU_COUNT):
         index = table_str.find(' , ')
@@ -71,14 +78,15 @@ if req.status_code == 200:
         table_str = table_str[index + 3:]
 
     for menu, RU in zip(menu_list, range(1, RU_COUNT + 1)):
-        # Create a tweet
-        string_tweet = "Cardápio RU" + str(RU) + ":\n" + menu
+        # Criação do tweet no formato "Cardápio RU(numero) (data da publicação): (Cardápio)
+        string_tweet = "Cardápio RU" + str(RU) + " (" + str(now.day) + "/" + str(now.month) + "/" + str(now.year) + "):\n" + menu
 
-        # First tweet is standalone, and the others are replies to the last one
+        # O primeiro tweet é um novo, os outros são respostas para o último
         if RU == 1:
             api.update_status(string_tweet)
         else:
-            tweetId = tweet['results'][0]['id']
-            api.update_status(string_tweet, tweetId)
-
+            timeline = api.home_timeline()
+            tweet = timeline[0];
+            api.update_status(status=string_tweet, in_reply_to_status_id=tweet.id)
+            
         print('Twitted:', string_tweet)
